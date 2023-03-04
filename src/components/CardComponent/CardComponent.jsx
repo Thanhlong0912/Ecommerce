@@ -9,7 +9,19 @@ import {
 import { StarFilled } from "@ant-design/icons";
 import logo from "../../assets/images/logo.png";
 
-const CardComponent = () => {
+const CardComponent = (props) => {
+  const {
+    countInStock,
+    description,
+    image,
+    name,
+    price,
+    rating,
+    type,
+    discount,
+    selled,
+  } = props;
+
   return (
     <WrapperCardStyle
       hoverable
@@ -35,19 +47,19 @@ const CardComponent = () => {
           borderTopLeftRadius: "3px",
         }}
       />
-      <StyleNameProduct>Iphone</StyleNameProduct>
+      <StyleNameProduct>{name}</StyleNameProduct>
       <WrapperReportText>
         <span>
-          <span>5.0</span>
+          <span>{rating}</span>
           <StarFilled
             style={{ fontSize: "12px", color: "rgb(253, 216, 54)" }}
           />
         </span>
-        <span>| Da ban 1000+</span>
+        <span>| Đã bán {selled || 1000}+</span>
       </WrapperReportText>
       <WrapperPriceText>
-        <span style={{ marginRight: "8px" }}>1.000.000d</span>
-        <WrapperDiscountText>-5%</WrapperDiscountText>
+        <span style={{ marginRight: "8px" }}>{price}</span>
+        <WrapperDiscountText>{discount || 5} %</WrapperDiscountText>
       </WrapperPriceText>
     </WrapperCardStyle>
   );

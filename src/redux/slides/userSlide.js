@@ -2,15 +2,17 @@ import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
   name: "",
-  emai: "",
+  email: "",
   phone: "",
   address: "",
   avatar: "",
-  id: "",
   access_token: "",
+  id: "",
+  isAdmin: false,
+  city: "",
 };
 
-export const userSilce = createSlice({
+export const userSlide = createSlice({
   name: "user",
   initialState,
   reducers: {
@@ -18,33 +20,39 @@ export const userSilce = createSlice({
       const {
         name = "",
         email = "",
-        phone = "",
+        access_token = "",
         address = "",
+        phone = "",
         avatar = "",
         _id = "",
-        access_token = "",
+        isAdmin,
+        city = "",
       } = action.payload;
       state.name = name;
       state.email = email;
-      state.phone = phone;
       state.address = address;
+      state.phone = phone;
       state.avatar = avatar;
       state.id = _id;
       state.access_token = access_token;
+      state.isAdmin = isAdmin;
+      state.city = city;
     },
     resetUser: (state) => {
       state.name = "";
       state.email = "";
-      state.phone = "";
       state.address = "";
+      state.phone = "";
       state.avatar = "";
       state.id = "";
       state.access_token = "";
+      state.access_token = false;
+      state.city = "";
     },
   },
 });
 
 // Action creators are generated for each case reducer function
-export const { updateUser, resetUser } = userSilce.actions;
+export const { updateUser, resetUser } = userSlide.actions;
 
-export default userSilce.reducer;
+export default userSlide.reducer;

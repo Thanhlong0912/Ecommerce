@@ -27,6 +27,9 @@ const HeaderComponent = () => {
   const handleNavigateLogin = () => {
     navigate("/sign-in");
   };
+  const handleNavigate = () => {
+    navigate("/");
+  };
   const dispath = useDispatch();
   const [loading, setLoading] = useState(false);
   const handleLogout = async () => {
@@ -62,7 +65,9 @@ const HeaderComponent = () => {
     >
       <WrapperHeader>
         <Col span={5}>
-          <WrapperTextHeader>TRANG THƯƠNG MẠI ĐIỆN TỬ</WrapperTextHeader>
+          <WrapperTextHeader onClick={handleNavigate}>
+            TRANG THƯƠNG MẠI ĐIỆN TỬ
+          </WrapperTextHeader>
         </Col>
         <Col span={13}>
           <ButtonInputSearch
