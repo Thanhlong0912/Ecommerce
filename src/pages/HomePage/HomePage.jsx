@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import SliderComponent from "../../components/SliderComponent/SliderComponent";
 import TypeProduct from "../../components/TypeProduct/TypeProduct";
 import {
@@ -12,14 +12,33 @@ import slider3 from "../../assets/images/slider3.webp";
 import CardComponent from "../../components/CardComponent/CardComponent";
 import * as ProductService from "../../services/ProductService";
 import { useQuery } from "@tanstack/react-query";
+import { useSelector } from "react-redux";
+import Loading from "../../components/LoadingComponent/Loading";
+import { useDebounce } from "../../hooks/useDebounce";
 
 const HomePage = () => {
+  const searchProduct = useSelector((state) => state?.product?.search);
+  const searchDebounce = useDebounce(searchProduct, 1000);
+  const refSearch = useRef();
+  const [loading, setLoading] = useState(false);
+  const [stateProducts, setStateProducts] = useState([]);
   const arr = ["TV", "Tu lanh", "Laptop"];
-  const fetchProductAll = async () => {
-    const res = await ProductService.getAllProduct();
-    console.log("res", res);
-    return res;
+  const fetchProductAll = async (search) => {
+    const res = await ProductService.getAllProduct(search);
+    if (search?.length > 0 || refSearch.current) {
+      setStateProducts(res?.data);
+    } else {
+      return res;
+    }
   };
+  useEffect(() => {
+    if (refSearch.current) {
+      setLoading(true);
+      fetchProductAll(searchDebounce);
+    }
+    refSearch.current = true;
+    setLoading(false);
+  }, [searchDebounce]);
   const { isLoading, data: products } = useQuery(
     ["products"],
     fetchProductAll,
@@ -28,9 +47,13 @@ const HomePage = () => {
       retryDelay: 1000,
     }
   );
-  console.log("data", products);
+  useEffect(() => {
+    if (products?.data?.length > 0) {
+      setStateProducts(products?.data);
+    }
+  }, [products]);
   return (
-    <>
+    <Loading isLoading={isLoading || loading}>
       <div style={{ width: "1270px", margin: "0 auto" }}>
         <WrapperTypeProduct>
           {arr.map((item) => {
@@ -60,7 +83,7 @@ const HomePage = () => {
               width: "100%",
             }}
           >
-            {products?.data.map((product) => {
+            {stateProducts?.map((product) => {
               return (
                 <CardComponent
                   key={product._id}
@@ -100,7 +123,7 @@ const HomePage = () => {
           </div>
         </div>
       </div>
-    </>
+    </Loading>
   );
 };
 

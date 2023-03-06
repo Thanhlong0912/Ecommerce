@@ -21,6 +21,7 @@ const ButtonInputSearch = (props) => {
         style={{
           backgroundColor: backgroundColorInput,
         }}
+        {...props}
       />
       <ButtonComponent
         size={size}
