@@ -1,40 +1,34 @@
-import { Checkbox, Form } from "antd";
-import React, { useEffect, useMemo, useState } from "react";
+import { Form, Radio } from "antd";
+import React, { useEffect, useState } from "react";
 import {
-  WrapperCountOrder,
+  Lable,
   WrapperInfo,
-  WrapperItemOrder,
   WrapperLeft,
-  WrapperListOrder,
-  WrapperPriceDiscount,
+  WrapperRadio,
   WrapperRight,
-  WrapperStyleHeader,
   WrapperTotal,
 } from "./style";
-import { DeleteOutlined, MinusOutlined, PlusOutlined } from "@ant-design/icons";
+
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
-import { WrapperInputNumber } from "../../components/ProductDetailsComponent/style";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  decreaseAmount,
-  increaseAmount,
-  removeAllOrderProduct,
-  removeOrderProduct,
-  selectedOrder,
-} from "../../redux/slides/orderSlide";
 import { convertPrice } from "../../utils";
+import { useMemo } from "react";
 import ModalComponent from "../../components/ModalComponent/ModalComponent";
-import Loading from "../../components/LoadingComponent/Loading";
 import InputComponent from "../../components/InputComponent/InputComponent";
 import { useMutationHooks } from "../../hooks/useMutationHook";
 import * as UserService from "../../services/UserService";
+import * as OrderService from "../../services/OrderService";
+import Loading from "../../components/LoadingComponent/Loading";
 import * as message from "../../components/Message/Message";
 import { updateUser } from "../../redux/slides/userSlide";
-import { useNavigate } from "react-router-dom";
 
 const PaymentPage = () => {
   const order = useSelector((state) => state.order);
   const user = useSelector((state) => state.user);
+
+  const [delivery, setDelivery] = useState("fast");
+  const [payment, setPayment] = useState("later_money");
+
   const [isOpenModalUpdateInfo, setIsOpenModalUpdateInfo] = useState(false);
   const [stateUserDetails, setStateUserDetails] = useState({
     name: "",
@@ -43,32 +37,8 @@ const PaymentPage = () => {
     city: "",
   });
   const [form] = Form.useForm();
-  const [listChecked, setListChecked] = useState([]);
+
   const dispatch = useDispatch();
-  const onChange = (e) => {
-    if (listChecked.includes(e.target.value)) {
-      const newListChecked = listChecked.filter(
-        (item) => item !== e.target.value
-      );
-      setListChecked(newListChecked);
-    } else {
-      setListChecked([...listChecked, e.target.value]);
-    }
-  };
-  const handleOnchangeCheckAll = (e) => {
-    if (e.target.checked) {
-      const newListChecked = [];
-      order?.orderItems?.forEach((item) => {
-        newListChecked.push(item?.product);
-      });
-      setListChecked(newListChecked);
-    } else {
-      setListChecked([]);
-    }
-  };
-  useEffect(() => {
-    dispatch(selectedOrder({ listChecked }));
-  }, [listChecked]);
 
   useEffect(() => {
     form.setFieldsValue(stateUserDetails);
@@ -77,11 +47,10 @@ const PaymentPage = () => {
   useEffect(() => {
     if (isOpenModalUpdateInfo) {
       setStateUserDetails({
-        ...stateUserDetails,
-        name: user?.name,
-        phone: user?.phone,
         city: user?.city,
+        name: user?.name,
         address: user?.address,
+        phone: user?.phone,
       });
     }
   }, [isOpenModalUpdateInfo]);
@@ -90,21 +59,6 @@ const PaymentPage = () => {
     setIsOpenModalUpdateInfo(true);
   };
 
-  const handleChangeCount = (type, idProduct) => {
-    if (type === "increase") {
-      dispatch(increaseAmount({ idProduct }));
-    } else {
-      dispatch(decreaseAmount({ idProduct }));
-    }
-  };
-  const handleDeleteOrder = (idProduct) => {
-    dispatch(removeOrderProduct({ idProduct }));
-  };
-  const handleRemoveAllOrder = () => {
-    if (listChecked?.length > 1) {
-      dispatch(removeAllOrderProduct({ listChecked }));
-    }
-  };
   const priceMemo = useMemo(() => {
     const result = order?.orderItemsSlected?.reduce((total, cur) => {
       return total + cur.price * cur.amount;
@@ -124,11 +78,11 @@ const PaymentPage = () => {
 
   const diliveryPriceMemo = useMemo(() => {
     if (priceMemo > 200000) {
-      return 20000;
+      return 10000;
     } else if (priceMemo === 0) {
       return 0;
     } else {
-      return 10000;
+      return 20000;
     }
   }, [priceMemo]);
 
@@ -138,22 +92,70 @@ const PaymentPage = () => {
     );
   }, [priceMemo, priceDiscountMemo, diliveryPriceMemo]);
 
-  const handleAddCard = () => {
-    if (!order?.orderItemsSlected?.length) {
-      message.error("Vui lòng chọn sản phẩm");
-    } else if (!user.name || !user.phone || !user.address || !user.city) {
-      setIsOpenModalUpdateInfo(true);
-    } else {
+  const handleAddOrder = () => {
+    if (
+      user?.access_token &&
+      order?.orderItemsSlected &&
+      user?.name &&
+      user?.address &&
+      user?.phone &&
+      user?.city &&
+      priceMemo &&
+      user?.id
+    ) {
+      // eslint-disable-next-line no-unused-expressions
+      mutationAddOrder.mutate({
+        token: user?.access_token,
+        orderItems: order?.orderItemsSlected,
+        fullName: user?.name,
+        address: user?.address,
+        phone: user?.phone,
+        city: user?.city,
+        paymentMethod: payment,
+        itemsPrice: priceMemo,
+        shippingPrice: diliveryPriceMemo,
+        totalPrice: totalPriceMemo,
+        user: user?.id,
+      });
     }
   };
+
   const mutationUpdate = useMutationHooks((data) => {
     const { id, token, ...rests } = data;
     const res = UserService.updateUser(id, { ...rests }, token);
     return res;
   });
 
+  const mutationAddOrder = useMutationHooks((data) => {
+    const { token, ...rests } = data;
+    const res = OrderService.createOrder({ ...rests }, token);
+    return res;
+  });
+
   const { isLoading, data } = mutationUpdate;
-  const handleCancelUpdate = () => {
+  const {
+    data: dataAdd,
+    isLoading: isLoadingAddOrder,
+    isSuccess,
+    isError,
+  } = mutationAddOrder;
+
+  useEffect(() => {
+    if (isSuccess && dataAdd?.status === "OK") {
+      message.success("Đặt hằng thành cống");
+    } else if (isError) {
+      message.error();
+    }
+  }, [isSuccess, isError]);
+
+  const handleCancleUpdate = () => {
+    setStateUserDetails({
+      name: "",
+      email: "",
+      phone: "",
+      isAdmin: false,
+    });
+    form.resetFields();
     setIsOpenModalUpdateInfo(false);
   };
   const handleUpdateInforUser = () => {
@@ -163,328 +165,242 @@ const PaymentPage = () => {
         { id: user?.id, token: user?.access_token, ...stateUserDetails },
         {
           onSuccess: () => {
-            dispatch(UserService({ name, address, city, phone }));
+            dispatch(updateUser({ name, address, city, phone }));
             setIsOpenModalUpdateInfo(false);
           },
         }
       );
     }
   };
+
   const handleOnchangeDetails = (e) => {
     setStateUserDetails({
       ...stateUserDetails,
       [e.target.name]: e.target.value,
     });
   };
+  const handleDilivery = (e) => {
+    setDelivery(e.target.value);
+  };
+
+  const handlePayment = (e) => {
+    setPayment(e.target.value);
+  };
+
   return (
     <div style={{ background: "#f5f5fa", with: "100%", height: "100vh" }}>
-      <div style={{ height: "100%", width: "1270px", margin: "0 auto" }}>
-        <h3>Giỏ hàng</h3>
-        <div style={{ display: "flex", justifyContent: "center" }}>
-          <WrapperLeft>
-            <WrapperStyleHeader>
-              <span style={{ display: "inline-block", width: "390px" }}>
-                <Checkbox
-                  onChange={handleOnchangeCheckAll}
-                  checked={listChecked?.length === order?.orderItems?.length}
-                ></Checkbox>
-                <span> Tất cả ({order?.orderItems?.length} sản phẩm)</span>
-              </span>
-              <div
-                style={{
-                  flex: 1,
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                }}
-              >
-                <span>Đơn giá</span>
-                <span>Số lượng</span>
-                <span>Thành tiền</span>
-                <DeleteOutlined
-                  style={{ cursor: "pointer" }}
-                  onClick={handleRemoveAllOrder}
-                />
-              </div>
-            </WrapperStyleHeader>
-            <WrapperListOrder>
-              {order?.orderItems?.map((order) => {
-                return (
-                  <WrapperItemOrder>
-                    <div
-                      style={{
-                        width: "390px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 4,
-                      }}
-                    >
-                      <Checkbox
-                        onChange={onChange}
-                        value={order?.product}
-                        checked={listChecked.includes(order?.product)}
-                      ></Checkbox>
-                      <img
-                        src={order?.image}
-                        style={{
-                          width: "77px",
-                          height: "79px",
-                          objectFit: "cover",
-                        }}
-                      />
-                      <div
-                        style={{
-                          width: 260,
-                          overflow: "hidden",
-                          textOverflow: "ellipsis",
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {order?.name}
-                      </div>
-                    </div>
-                    <div
-                      style={{
-                        flex: 1,
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <span>
-                        <span style={{ fontSize: "13px", color: "#242424" }}>
-                          {convertPrice(order?.price)}
-                        </span>
-                      </span>
-                      <WrapperCountOrder>
-                        <button
-                          style={{
-                            border: "none",
-                            background: "transparent",
-                            cursor: "pointer",
-                          }}
-                          onClick={() =>
-                            handleChangeCount("decrease", order?.product)
-                          }
-                        >
-                          <MinusOutlined
-                            style={{ color: "#000", fontSize: "10px" }}
-                          />
-                        </button>
-                        <WrapperInputNumber
-                          defaultValue={order?.amount}
-                          value={order?.amount}
-                          size="small"
-                        />
-                        <button
-                          style={{
-                            border: "none",
-                            background: "transparent",
-                            cursor: "pointer",
-                          }}
-                          onClick={() =>
-                            handleChangeCount("increase", order?.product)
-                          }
-                        >
-                          <PlusOutlined
-                            style={{ color: "#000", fontSize: "10px" }}
-                          />
-                        </button>
-                      </WrapperCountOrder>
-                      <span
-                        style={{
-                          color: "rgb(255, 66, 78)",
-                          fontSize: "13px",
-                          fontWeight: 500,
-                        }}
-                      >
-                        {convertPrice(order?.price * order?.amount)}
-                      </span>
-                      <DeleteOutlined
-                        style={{ cursor: "pointer" }}
-                        onClick={() => handleDeleteOrder(order?.product)}
-                      />
-                    </div>
-                  </WrapperItemOrder>
-                );
-              })}
-            </WrapperListOrder>
-          </WrapperLeft>
-          <WrapperRight>
-            <div style={{ width: "100%" }}>
+      <Loading isLoading={isLoadingAddOrder}>
+        <div style={{ height: "100%", width: "1270px", margin: "0 auto" }}>
+          <h3>Thanh toán</h3>
+          <ditoánv style={{ display: "flex", justifyContent: "center" }}>
+            <WrapperLeft>
               <WrapperInfo>
                 <div>
-                  <span style={{ color: "blue" }}>Địa chỉ giao hàng: </span>
-                  <span
-                    style={{ fontWeight: "bold" }}
-                  >{`${user?.address} - ${user.city}`}</span>
+                  <Lable>Chọn phương thức giao hàng</Lable>
+                  <WrapperRadio onChange={handleDilivery} value={delivery}>
+                    <Radio value="fast">
+                      <span style={{ color: "#ea8500", fontWeight: "bold" }}>
+                        FAST
+                      </span>{" "}
+                      Giao hàng tiết kiệm
+                    </Radio>
+                    <Radio value="gojek">
+                      <span style={{ color: "#ea8500", fontWeight: "bold" }}>
+                        GO_JEK
+                      </span>{" "}
+                      Giao hàng tiết kiệm
+                    </Radio>
+                  </WrapperRadio>
                 </div>
-                <span
-                  style={{ color: "blue", cursor: "pointer" }}
-                  onClick={handleChangeAddress}
-                >
-                  Thay đổi địa chỉ
-                </span>
               </WrapperInfo>
               <WrapperInfo>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span>Tạm tính</span>
-                  <span
-                    style={{
-                      color: "#000",
-                      fontSize: "14px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {convertPrice(priceMemo)}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span>Giảm giá</span>
-                  <span
-                    style={{
-                      color: "#000",
-                      fontSize: "14px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {`${priceDiscountMemo} %`}
-                  </span>
-                </div>
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                  }}
-                >
-                  <span>Phí giao hàng</span>
-                  <span
-                    style={{
-                      color: "#000",
-                      fontSize: "14px",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    {convertPrice(diliveryPriceMemo)}
-                  </span>
+                <div>
+                  <Lable>Chọn phương thức thanh toán</Lable>
+                  <WrapperRadio onChange={handlePayment} value={payment}>
+                    <Radio value="later_money">
+                      {" "}
+                      Thanh toán tiền mặt khi nhận hàng
+                    </Radio>
+                  </WrapperRadio>
                 </div>
               </WrapperInfo>
-              <WrapperTotal>
-                <span>Tổng tiền</span>
-                <span style={{ display: "flex", flexDirection: "column" }}>
-                  <span
+            </WrapperLeft>
+            <WrapperRight>
+              <div style={{ width: "100%" }}>
+                <WrapperInfo>
+                  <div>
+                    <span>Địa chỉ: </span>
+                    <span style={{ fontWeight: "bold" }}>
+                      {`${user?.address} ${user?.city}`}{" "}
+                    </span>
+                    <span
+                      onClick={handleChangeAddress}
+                      style={{ color: "blue", cursor: "pointer" }}
+                    >
+                      Thay đổi
+                    </span>
+                  </div>
+                </WrapperInfo>
+                <WrapperInfo>
+                  <div
                     style={{
-                      color: "rgb(254, 56, 52)",
-                      fontSize: "24px",
-                      fontWeight: "bold",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
                     }}
                   >
-                    {convertPrice(totalPriceMemo)}
+                    <span>Tạm tính</span>
+                    <span
+                      style={{
+                        color: "#000",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {convertPrice(priceMemo)}
+                    </span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>Giảm giá</span>
+                    <span
+                      style={{
+                        color: "#000",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                      }}
+                    >{`${priceDiscountMemo} %`}</span>
+                  </div>
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <span>Phí giao hàng</span>
+                    <span
+                      style={{
+                        color: "#000",
+                        fontSize: "14px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {convertPrice(diliveryPriceMemo)}
+                    </span>
+                  </div>
+                </WrapperInfo>
+                <WrapperTotal>
+                  <span>Tổng tiền</span>
+                  <span style={{ display: "flex", flexDirection: "column" }}>
+                    <span
+                      style={{
+                        color: "rgb(254, 56, 52)",
+                        fontSize: "24px",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      {convertPrice(totalPriceMemo)}
+                    </span>
+                    <span style={{ color: "#000", fontSize: "11px" }}>
+                      (Đã bao gồm VAT nếu có)
+                    </span>
                   </span>
-                  <span style={{ color: "#000", fontSize: "11px" }}>
-                    (Đã bao gồm VAT nếu có)
-                  </span>
-                </span>
-              </WrapperTotal>
-            </div>
-            <ButtonComponent
-              onClick={() => handleAddCard()}
-              size={40}
-              styleButton={{
-                background: "rgb(255, 57, 69)",
-                height: "48px",
-                width: "320px",
-                border: "none",
-                borderRadius: "4px",
-              }}
-              textButton={"Mua hàng"}
-              styleTextButton={{
-                color: "#fff",
-                fontSize: "15px",
-                fontWeight: "700",
-              }}
-            ></ButtonComponent>
-          </WrapperRight>
+                </WrapperTotal>
+              </div>
+              <ButtonComponent
+                onClick={() => handleAddOrder()}
+                size={40}
+                styleButton={{
+                  background: "rgb(255, 57, 69)",
+                  height: "48px",
+                  width: "320px",
+                  border: "none",
+                  borderRadius: "4px",
+                }}
+                textButton={"Đặt hàng"}
+                styleTextButton={{
+                  color: "#fff",
+                  fontSize: "15px",
+                  fontWeight: "700",
+                }}
+              ></ButtonComponent>
+            </WrapperRight>
+          </ditoánv>
         </div>
-      </div>
-      <ModalComponent
-        title="Cập nhật thông tin giao hàng"
-        open={isOpenModalUpdateInfo}
-        onCancel={handleCancelUpdate}
-        onOk={handleUpdateInforUser}
-      >
-        <Loading isLoading={isLoading}>
-          <Form
-            name="basic"
-            labelCol={{ span: 4 }}
-            wrapperCol={{ span: 20 }}
-            // onFinish={onUpdateUser}
-            autoComplete="on"
-            form={form}
-          >
-            <Form.Item
-              label="Name"
-              name="name"
-              rules={[{ required: true, message: "Please input your name!" }]}
+        <ModalComponent
+          title="Cập nhật thông tin giao hàng"
+          open={isOpenModalUpdateInfo}
+          onCancel={handleCancleUpdate}
+          onOk={handleUpdateInforUser}
+        >
+          <Loading isLoading={isLoading}>
+            <Form
+              name="basic"
+              labelCol={{ span: 4 }}
+              wrapperCol={{ span: 20 }}
+              // onFinish={onUpdateUser}
+              autoComplete="on"
+              form={form}
             >
-              <InputComponent
-                value={stateUserDetails["name"]}
-                onChange={handleOnchangeDetails}
+              <Form.Item
+                label="Name"
                 name="name"
-              />
-            </Form.Item>
-            <Form.Item
-              label="City"
-              name="city"
-              rules={[{ required: true, message: "Please input your city!" }]}
-            >
-              <InputComponent
-                value={stateUserDetails["city"]}
-                onChange={handleOnchangeDetails}
+                rules={[{ required: true, message: "Please input your name!" }]}
+              >
+                <InputComponent
+                  value={stateUserDetails["name"]}
+                  onChange={handleOnchangeDetails}
+                  name="name"
+                />
+              </Form.Item>
+              <Form.Item
+                label="City"
                 name="city"
-              />
-            </Form.Item>
-            <Form.Item
-              label="Phone"
-              name="phone"
-              rules={[{ required: true, message: "Please input your  phone!" }]}
-            >
-              <InputComponent
-                value={stateUserDetails.phone}
-                onChange={handleOnchangeDetails}
+                rules={[{ required: true, message: "Please input your city!" }]}
+              >
+                <InputComponent
+                  value={stateUserDetails["city"]}
+                  onChange={handleOnchangeDetails}
+                  name="city"
+                />
+              </Form.Item>
+              <Form.Item
+                label="Phone"
                 name="phone"
-              />
-            </Form.Item>
+                rules={[
+                  { required: true, message: "Please input your  phone!" },
+                ]}
+              >
+                <InputComponent
+                  value={stateUserDetails.phone}
+                  onChange={handleOnchangeDetails}
+                  name="phone"
+                />
+              </Form.Item>
 
-            <Form.Item
-              label="Adress"
-              name="address"
-              rules={[
-                { required: true, message: "Please input your  address!" },
-              ]}
-            >
-              <InputComponent
-                value={stateUserDetails.address}
-                onChange={handleOnchangeDetails}
+              <Form.Item
+                label="Adress"
                 name="address"
-              />
-            </Form.Item>
-          </Form>
-        </Loading>
-      </ModalComponent>
+                rules={[
+                  { required: true, message: "Please input your  address!" },
+                ]}
+              >
+                <InputComponent
+                  value={stateUserDetails.address}
+                  onChange={handleOnchangeDetails}
+                  name="address"
+                />
+              </Form.Item>
+            </Form>
+          </Loading>
+        </ModalComponent>
+      </Loading>
     </div>
   );
 };
