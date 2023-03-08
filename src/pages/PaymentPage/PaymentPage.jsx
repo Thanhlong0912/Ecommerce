@@ -32,10 +32,9 @@ import * as message from "../../components/Message/Message";
 import { updateUser } from "../../redux/slides/userSlide";
 import { useNavigate } from "react-router-dom";
 
-const OrderPage = () => {
+const PaymentPage = () => {
   const order = useSelector((state) => state.order);
   const user = useSelector((state) => state.user);
-  const navigate = useNavigate();
   const [isOpenModalUpdateInfo, setIsOpenModalUpdateInfo] = useState(false);
   const [stateUserDetails, setStateUserDetails] = useState({
     name: "",
@@ -145,7 +144,6 @@ const OrderPage = () => {
     } else if (!user.name || !user.phone || !user.address || !user.city) {
       setIsOpenModalUpdateInfo(true);
     } else {
-      navigate("/payment");
     }
   };
   const mutationUpdate = useMutationHooks((data) => {
@@ -491,4 +489,4 @@ const OrderPage = () => {
   );
 };
 
-export default OrderPage;
+export default PaymentPage;

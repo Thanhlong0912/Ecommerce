@@ -2,9 +2,12 @@ import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Col, Image, Rate, Row } from "antd";
 import React, { useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { useLocation, useNavigate } from "react-router-dom";
 import imageProductSmall from "../../assets/images/imagesmall.webp";
+import { addOrderProduct } from "../../redux/slides/orderSlide";
 import * as ProductService from "../../services/ProductService";
+import { convertPrice } from "../../utils";
 import ButtonComponent from "../ButtonComponent/ButtonComponent";
 import Loading from "../LoadingComponent/Loading";
 import {
@@ -22,6 +25,9 @@ import {
 const ProductDetailsComponent = ({ idProduct }) => {
   const [numProduct, setNumProduct] = useState(1);
   const user = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const location = useLocation();
+  const dispatch = useDispatch();
   const onChange = (value) => {
     setNumProduct(Number(value));
   };
@@ -46,7 +52,24 @@ const ProductDetailsComponent = ({ idProduct }) => {
       enabled: !!idProduct,
     }
   );
-  console.log("productDetails", productDetails);
+  const handleAddOrderProduct = () => {
+    if (!user?.id) {
+      navigate("/sign-in", { state: location?.pathname });
+    } else {
+      dispatch(
+        addOrderProduct({
+          orderItem: {
+            name: productDetails?.name,
+            amount: numProduct,
+            image: productDetails?.image,
+            price: productDetails?.price,
+            product: productDetails?._id,
+          },
+        })
+      );
+    }
+  };
+
   return (
     <div style={{ padding: "16px", background: "#fff", borderRadius: "4px" }}>
       <Loading isLoading={isLoading}>
@@ -73,35 +96,35 @@ const ProductDetailsComponent = ({ idProduct }) => {
                 </WrapperStyleColImage>
                 <WrapperStyleColImage span={4}>
                   <WrapperStyleImageSmall
-                    src={imageProductSmall}
+                    src={productDetails?.image}
                     alt="image small"
                     preview={false}
                   />
                 </WrapperStyleColImage>
                 <WrapperStyleColImage span={4}>
                   <WrapperStyleImageSmall
-                    src={imageProductSmall}
+                    src={productDetails?.image}
                     alt="image small"
                     preview={false}
                   />
                 </WrapperStyleColImage>
                 <WrapperStyleColImage span={4}>
                   <WrapperStyleImageSmall
-                    src={imageProductSmall}
+                    src={productDetails?.image}
                     alt="image small"
                     preview={false}
                   />
                 </WrapperStyleColImage>
                 <WrapperStyleColImage span={4}>
                   <WrapperStyleImageSmall
-                    src={imageProductSmall}
+                    src={productDetails?.image}
                     alt="image small"
                     preview={false}
                   />
                 </WrapperStyleColImage>
                 <WrapperStyleColImage span={4}>
                   <WrapperStyleImageSmall
-                    src={imageProductSmall}
+                    src={productDetails?.image}
                     alt="image small"
                     preview={false}
                   />
@@ -123,13 +146,15 @@ const ProductDetailsComponent = ({ idProduct }) => {
             </div>
             <WrapperPriceProduct>
               <WrapperPriceTextProduct>
-                {productDetails?.price}
+                {convertPrice(productDetails?.price)}
               </WrapperPriceTextProduct>
             </WrapperPriceProduct>
+            <div>{productDetails?.description}</div>
             <WrapperAddressProduct>
-              <span>Giao đến</span>
-              <span className="address">{user?.address}</span>-
-              <span className="change-address">Doi DC</span>
+              <span style={{ color: "blue" }}>Giao đến: </span>
+              <span className="address" style={{ fontWeight: "bold" }}>
+                {user?.address}
+              </span>
             </WrapperAddressProduct>
             <div
               style={{
@@ -179,6 +204,7 @@ const ProductDetailsComponent = ({ idProduct }) => {
                   border: "none",
                   borderRadius: "4px",
                 }}
+                onClick={handleAddOrderProduct}
                 textButton={"Chọn mua"}
                 styleTextButton={{
                   color: "#fff",

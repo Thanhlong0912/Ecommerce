@@ -3,7 +3,7 @@ import { Image } from "antd";
 import jwt_decode from "jwt-decode";
 import React, { useEffect, useState } from "react";
 import { useDispatch } from "react-redux";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import imageLogo from "../../assets/images/logo-login.png";
 import ButtonComponent from "../../components/ButtonComponent/ButtonComponent";
 import InputForm from "../../components/InputForm/InputForm";
@@ -19,6 +19,7 @@ import {
 
 const SignInPage = () => {
   const [isShowPassword, setIsShowPassword] = useState(false);
+  const location = useLocation();
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const handleNavigateSignUp = () => {
@@ -28,8 +29,11 @@ const SignInPage = () => {
   const { data, isLoading, isSuccess } = mutation;
   useEffect(() => {
     if (isSuccess) {
-      navigate("/");
-      console.log("data", data);
+      if (location?.state) {
+        navigate(location?.state);
+      } else {
+        navigate("/");
+      }
       localStorage.setItem("access_token", JSON.stringify(data?.access_token));
       if (data?.access_token) {
         const decoded = jwt_decode(data?.access_token);

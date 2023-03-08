@@ -383,6 +383,7 @@ const AdminProduct = () => {
       image: "",
       type: "",
       countInStock: "",
+      discount: "",
     });
     form.resetFields();
   };
