@@ -21,10 +21,13 @@ import * as OrderService from "../../services/OrderService";
 import Loading from "../../components/LoadingComponent/Loading";
 import * as message from "../../components/Message/Message";
 import { updateUser } from "../../redux/slides/userSlide";
+import { useNavigate } from "react-router-dom";
+import { removeAllOrderProduct } from "../../redux/slides/orderSlide";
 
 const PaymentPage = () => {
   const order = useSelector((state) => state.order);
   const user = useSelector((state) => state.user);
+  const navigate = useNavigate();
 
   const [delivery, setDelivery] = useState("fast");
   const [payment, setPayment] = useState("later_money");
@@ -142,7 +145,20 @@ const PaymentPage = () => {
 
   useEffect(() => {
     if (isSuccess && dataAdd?.status === "OK") {
-      message.success("Đặt hằng thành cống");
+      const arrayOrder = [];
+      order?.orderItemsSlected?.forEach((element) => {
+        arrayOrder.push(element.product);
+      });
+      dispatch(removeAllOrderProduct({ listChecked: arrayOrder }));
+      message.success("Đặt hàng thành công");
+      navigate("/orderSuccess", {
+        state: {
+          delivery,
+          payment,
+          orders: order?.orderItemsSlected,
+          totalPriceMemo: totalPriceMemo,
+        },
+      });
     } else if (isError) {
       message.error();
     }
@@ -192,7 +208,7 @@ const PaymentPage = () => {
       <Loading isLoading={isLoadingAddOrder}>
         <div style={{ height: "100%", width: "1270px", margin: "0 auto" }}>
           <h3>Thanh toán</h3>
-          <ditoánv style={{ display: "flex", justifyContent: "center" }}>
+          <div style={{ display: "flex", justifyContent: "center" }}>
             <WrapperLeft>
               <WrapperInfo>
                 <div>
@@ -207,7 +223,7 @@ const PaymentPage = () => {
                     <Radio value="gojek">
                       <span style={{ color: "#ea8500", fontWeight: "bold" }}>
                         GO_JEK
-                      </span>{" "}
+                      </span>
                       Giao hàng tiết kiệm
                     </Radio>
                   </WrapperRadio>
@@ -218,7 +234,6 @@ const PaymentPage = () => {
                   <Lable>Chọn phương thức thanh toán</Lable>
                   <WrapperRadio onChange={handlePayment} value={payment}>
                     <Radio value="later_money">
-                      {" "}
                       Thanh toán tiền mặt khi nhận hàng
                     </Radio>
                   </WrapperRadio>
@@ -226,7 +241,7 @@ const PaymentPage = () => {
               </WrapperInfo>
             </WrapperLeft>
             <WrapperRight>
-              <div style={{ width: "100%" }}>
+              <div style={{ width: "80%" }}>
                 <WrapperInfo>
                   <div>
                     <span>Địa chỉ: </span>
@@ -319,7 +334,7 @@ const PaymentPage = () => {
                 styleButton={{
                   background: "rgb(255, 57, 69)",
                   height: "48px",
-                  width: "320px",
+                  width: "220px",
                   border: "none",
                   borderRadius: "4px",
                 }}
@@ -331,7 +346,7 @@ const PaymentPage = () => {
                 }}
               ></ButtonComponent>
             </WrapperRight>
-          </ditoánv>
+          </div>
         </div>
         <ModalComponent
           title="Cập nhật thông tin giao hàng"

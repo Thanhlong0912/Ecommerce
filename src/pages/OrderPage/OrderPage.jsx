@@ -9,6 +9,7 @@ import {
   WrapperPriceDiscount,
   WrapperRight,
   WrapperStyleHeader,
+  WrapperStyleHeaderDelivery,
   WrapperTotal,
 } from "./style";
 import { DeleteOutlined, MinusOutlined, PlusOutlined } from "@ant-design/icons";
@@ -31,6 +32,7 @@ import * as UserService from "../../services/UserService";
 import * as message from "../../components/Message/Message";
 import { updateUser } from "../../redux/slides/userSlide";
 import { useNavigate } from "react-router-dom";
+import StepComponent from "../../components/StepComponent/StepComponent";
 
 const OrderPage = () => {
   const order = useSelector((state) => state.order);
@@ -124,12 +126,14 @@ const OrderPage = () => {
   }, [order]);
 
   const diliveryPriceMemo = useMemo(() => {
-    if (priceMemo > 200000) {
-      return 20000;
-    } else if (priceMemo === 0) {
+    if (priceMemo >= 2000000 && priceMemo < 50000000) {
+      return 10000;
+    } else if (priceMemo >= 50000000) {
+      return 0;
+    } else if (order?.orderItemsSlected?.length === 0) {
       return 0;
     } else {
-      return 10000;
+      return 20000;
     }
   }, [priceMemo]);
 
@@ -178,12 +182,43 @@ const OrderPage = () => {
       [e.target.name]: e.target.value,
     });
   };
+
+  const itemsDelivery = [
+    {
+      title: "20.000 đ",
+      description: "Dưới 20.000.000 đ",
+    },
+    {
+      title: "10.000 đ",
+      description: "Từ 20.00.000 đến 50.00.000 đ",
+      subTitle: "Left 00:00:08",
+    },
+    {
+      title: "0 đ",
+      description: "Trên 50.00.000 đ",
+    },
+  ];
+
   return (
     <div style={{ background: "#f5f5fa", with: "100%", height: "100vh" }}>
       <div style={{ height: "100%", width: "1270px", margin: "0 auto" }}>
         <h3>Giỏ hàng</h3>
         <div style={{ display: "flex", justifyContent: "center" }}>
           <WrapperLeft>
+            <WrapperStyleHeaderDelivery>
+              <StepComponent
+                items={itemsDelivery}
+                current={
+                  diliveryPriceMemo === 10000
+                    ? 2
+                    : diliveryPriceMemo === 20000
+                    ? 1
+                    : order.orderItemsSlected.length === 0
+                    ? 0
+                    : 3
+                }
+              />
+            </WrapperStyleHeaderDelivery>
             <WrapperStyleHeader>
               <span style={{ display: "inline-block", width: "390px" }}>
                 <Checkbox
