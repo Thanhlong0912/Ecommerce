@@ -64,6 +64,8 @@ const ProductDetailsComponent = ({ idProduct }) => {
             image: productDetails?.image,
             price: productDetails?.price,
             product: productDetails?._id,
+            discount: productDetails?.discount,
+            countInStock: productDetails?.countInStock,
           },
         })
       );
@@ -142,7 +144,9 @@ const ProductDetailsComponent = ({ idProduct }) => {
                 defaultValue={productDetails?.rating}
                 value={productDetails?.rating}
               />
-              <WrapperStyleTextSell>| Da ban 1000+</WrapperStyleTextSell>
+              <WrapperStyleTextSell>
+                | Đã bán {productDetails?.selled}
+              </WrapperStyleTextSell>
             </div>
             <WrapperPriceProduct>
               <WrapperPriceTextProduct>

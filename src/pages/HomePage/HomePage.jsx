@@ -64,7 +64,7 @@ const HomePage = () => {
         <div
           id="container"
           style={{
-            height: "1000px",
+            height: "100%",
             width: "1270px",
             margin: "0 auto",
           }}

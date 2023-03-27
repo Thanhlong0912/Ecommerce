@@ -31,9 +31,6 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
   const handleNavigateLogin = () => {
     navigate("/sign-in");
   };
-  const handleNavigate = () => {
-    navigate("/");
-  };
   const handleClickNavigate = (type) => {
     if (type === "profile") {
       navigate("/profile-user");
@@ -101,9 +98,7 @@ const HeaderComponent = ({ isHiddenSearch = false, isHiddenCart = false }) => {
         }}
       >
         <Col span={5}>
-          <WrapperTextHeader onClick={handleNavigate}>
-            TRANG THƯƠNG MẠI ĐIỆN TỬ
-          </WrapperTextHeader>
+          <WrapperTextHeader to="/">TRANG THƯƠNG MẠI ĐIỆN TỬ</WrapperTextHeader>
         </Col>
         {!isHiddenSearch && (
           <Col span={13}>
