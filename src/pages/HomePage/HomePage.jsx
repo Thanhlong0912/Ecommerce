@@ -23,7 +23,6 @@ const HomePage = () => {
   const [limit, setLimit] = useState(6);
   const [typeProducts, setTypeProducts] = useState([]);
   const fetchProductAll = async (context) => {
-    console.log("context", context);
     const limit = context?.queryKey && context?.queryKey[1];
     const search = context?.queryKey && context?.queryKey[2];
     const res = await ProductService.getAllProduct(search, limit);
@@ -106,7 +105,7 @@ const HomePage = () => {
             }}
           >
             <WrapperButtonMore
-              textButton={isPreviousData ? "Load more" : "Xem thêm"}
+              textbutton={isPreviousData ? "Load more" : "Xem thêm"}
               type="outline"
               styleButton={{
                 border: "1px solid rgb(11, 116, 229)",
@@ -121,7 +120,7 @@ const HomePage = () => {
                 products?.total === products?.data?.length ||
                 products?.totalPage === 1
               }
-              styleTextButton={{
+              styletextbutton={{
                 fontWeight: 500,
                 color: products?.total === products?.data?.length && "#fff",
               }}

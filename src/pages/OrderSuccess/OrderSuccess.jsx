@@ -18,7 +18,6 @@ const OrderSuccess = () => {
   const order = useSelector((state) => state.order);
   const location = useLocation();
   const { state } = location;
-  console.log("location", location);
 
   return (
     <div style={{ background: "#f5f5fa", with: "100%", height: "100vh" }}>
@@ -49,7 +48,7 @@ const OrderSuccess = () => {
               <WrapperInfo>
                 {state.orders?.map((order) => {
                   return (
-                    <WrapperItemOrder>
+                    <WrapperItemOrder key={order?.name}>
                       <div
                         style={{
                           width: "390px",

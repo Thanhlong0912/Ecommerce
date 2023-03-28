@@ -37,7 +37,6 @@ const SignInPage = () => {
       localStorage.setItem("access_token", JSON.stringify(data?.access_token));
       if (data?.access_token) {
         const decoded = jwt_decode(data?.access_token);
-        console.log("decode", decoded);
         if (decoded?.id) {
           handleGetDetailsUser(decoded?.id, data?.access_token);
         }
@@ -48,7 +47,6 @@ const SignInPage = () => {
     const res = await UserService.getDetailsUser(id, token);
     dispatch(updateUser({ ...res?.data, access_token: token }));
   };
-  console.log("mutation", mutation);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const handleOnchangeEmail = (value) => {
@@ -127,8 +125,8 @@ const SignInPage = () => {
                 borderRadius: "4px",
                 margin: "26px 0 10px",
               }}
-              textButton={"Đăng nhập"}
-              styleTextButton={{
+              textbutton={"Đăng nhập"}
+              styletextbutton={{
                 color: "#fff",
                 fontSize: "15px",
                 fontWeight: "700",

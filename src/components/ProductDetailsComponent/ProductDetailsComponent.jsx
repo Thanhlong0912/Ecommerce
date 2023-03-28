@@ -1,7 +1,7 @@
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
 import { Col, Image, Rate, Row } from "antd";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
 import { addOrderProduct, resetOrder } from "../../redux/slides/orderSlide";
@@ -35,6 +35,7 @@ const ProductDetailsComponent = ({ idProduct }) => {
   const onChange = (value) => {
     setNumProduct(Number(value));
   };
+
   const fetchGetDetailsProduct = async (context) => {
     const id = context?.queryKey && context?.queryKey[1];
     if (id) {
@@ -54,7 +55,7 @@ const ProductDetailsComponent = ({ idProduct }) => {
       (!orderRedux && productDetails?.countInStock > 0)
     ) {
       setErrorLimitOrder(false);
-    } else {
+    } else if (productDetails?.countInStock === 0) {
       setErrorLimitOrder(true);
     }
   }, [numProduct]);
@@ -200,7 +201,13 @@ const ProductDetailsComponent = ({ idProduct }) => {
                 {user?.address}
               </span>
             </WrapperAddressProduct>
-            <LikeButtonComponent dataHref="https://developers.facebook.com/docs/plugins/" />
+            <LikeButtonComponent
+              dataHref={
+                process.env.REACT_APP_IS_LOCAL
+                  ? "https://developers.facebook.com/docs/plugins/"
+                  : window.location.href
+              }
+            />
             <div
               style={{
                 margin: "10px 0 20px",
@@ -253,8 +260,8 @@ const ProductDetailsComponent = ({ idProduct }) => {
                     borderRadius: "4px",
                   }}
                   onClick={handleAddOrderProduct}
-                  textButton={"Chọn mua"}
-                  styleTextButton={{
+                  textbutton={"Chọn mua"}
+                  styletextbutton={{
                     color: "#fff",
                     fontSize: "15px",
                     fontWeight: "700",
@@ -273,8 +280,8 @@ const ProductDetailsComponent = ({ idProduct }) => {
                   border: "1px solid rgb(13, 92, 182)",
                   borderRadius: "4px",
                 }}
-                textButton={"Mua trả sau"}
-                styleTextButton={{
+                textbutton={"Mua trả sau"}
+                styletextbutton={{
                   color: "rgb(13, 92, 182)",
                   fontSize: "15px",
                 }}
@@ -283,7 +290,9 @@ const ProductDetailsComponent = ({ idProduct }) => {
           </Col>
           <CommentComponent
             dataHref={
-              "https://developers.facebook.com/docs/plugins/comments#configurator"
+              process.env.REACT_APP_IS_LOCAL
+                ? "https://developers.facebook.com/docs/plugins/comments#configurator"
+                : window.location.href
             }
             width="1270"
           />

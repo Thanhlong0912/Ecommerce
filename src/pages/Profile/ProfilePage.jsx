@@ -111,8 +111,8 @@ const ProfilePage = () => {
                 borderRadius: "4px",
                 padding: "2px 6px 6px",
               }}
-              textButton={"Cập nhật"}
-              styleTextButton={{
+              textbutton={"Cập nhật"}
+              styletextbutton={{
                 color: "rgb(26, 148, 255)",
                 fontSize: "15px",
                 fontWeight: "700",
@@ -136,8 +136,8 @@ const ProfilePage = () => {
                 borderRadius: "4px",
                 padding: "2px 6px 6px",
               }}
-              textButton={"Cập nhật"}
-              styleTextButton={{
+              textbutton={"Cập nhật"}
+              styletextbutton={{
                 color: "rgb(26, 148, 255)",
                 fontSize: "15px",
                 fontWeight: "700",
@@ -161,8 +161,8 @@ const ProfilePage = () => {
                 borderRadius: "4px",
                 padding: "2px 6px 6px",
               }}
-              textButton={"Cập nhật"}
-              styleTextButton={{
+              textbutton={"Cập nhật"}
+              styletextbutton={{
                 color: "rgb(26, 148, 255)",
                 fontSize: "15px",
                 fontWeight: "700",
@@ -195,8 +195,8 @@ const ProfilePage = () => {
                 borderRadius: "4px",
                 padding: "2px 6px 6px",
               }}
-              textButton={"Cập nhật"}
-              styleTextButton={{
+              textbutton={"Cập nhật"}
+              styletextbutton={{
                 color: "rgb(26, 148, 255)",
                 fontSize: "15px",
                 fontWeight: "700",
@@ -220,8 +220,8 @@ const ProfilePage = () => {
                 borderRadius: "4px",
                 padding: "2px 6px 6px",
               }}
-              textButton={"Cập nhật"}
-              styleTextButton={{
+              textbutton={"Cập nhật"}
+              styletextbutton={{
                 color: "rgb(26, 148, 255)",
                 fontSize: "15px",
                 fontWeight: "700",

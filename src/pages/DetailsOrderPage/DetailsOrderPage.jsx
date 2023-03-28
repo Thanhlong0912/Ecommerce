@@ -144,14 +144,14 @@ const DetailsOrderPage = () => {
               );
             })}
 
-            <WrapperAllPrice>
+            {/* <WrapperAllPrice>
               <WrapperItemLabel>Tạm tính</WrapperItemLabel>
               <WrapperItem>{convertPrice(priceMemo)}</WrapperItem>
             </WrapperAllPrice>
             <WrapperAllPrice>
               <WrapperItemLabel>Phí vận chuyển</WrapperItemLabel>
               <WrapperItem>{convertPrice(data?.shippingPrice)}</WrapperItem>
-            </WrapperAllPrice>
+            </WrapperAllPrice> */}
             <WrapperAllPrice>
               <WrapperItemLabel>Tổng cộng</WrapperItemLabel>
               <WrapperItem>

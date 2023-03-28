@@ -35,11 +35,9 @@ const TypeProductPage = () => {
     let newProduct = [];
     if (searchDebounce) {
       newProduct = products?.filter((pro) => pro?.name === searchDebounce);
-      console.log("newProduct", newProduct);
       setProducts(newProduct);
     }
   }, [searchDebounce]);
-  console.log("searchProduct", searchProduct);
   useEffect(() => {
     if (state) {
       fetchProductType(state, panigate.page, panigate.limit);
